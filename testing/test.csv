@@ -1,0 +1,4 @@
+test_title,question_text,question_type,choices,correct_answers
+Python Basics,Что такое список?,single,"список,множество,словарь,строка",список
+Python Basics,Выберите изменяемые типы,multiple,"список,множество,кортеж,строка","список,множество"
+

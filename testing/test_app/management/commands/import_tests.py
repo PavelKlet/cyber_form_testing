@@ -1,5 +1,6 @@
 import csv
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from test_app.models import Test, Question
 
 class Command(BaseCommand):
@@ -20,21 +21,22 @@ class Command(BaseCommand):
                 grouped.setdefault(title, []).append(row)
 
             for title, questions in grouped.items():
-                test, _ = Test.objects.get_or_create(title=title)
+                with transaction.atomic():
+                    test, _ = Test.objects.get_or_create(title=title)
 
-                test.questions.all().delete()
+                    test.questions.all().delete()
 
-                questions_objs = []
+                    questions_objs = []
 
-                for q in questions:
-                    questions_objs.append(
-                        Question(
-                            test=test,
-                            text=q['question_text'],
-                            question_type=q['question_type'],
-                            choices=q['choices'].split(','),
-                            correct_answers=q['correct_answers'].split(','),
+                    for q in questions:
+                        questions_objs.append(
+                            Question(
+                                test=test,
+                                text=q['question_text'],
+                                question_type=q['question_type'],
+                                choices=q['choices'].split(','),
+                                correct_answers=q['correct_answers'].split(','),
+                            )
                         )
-                    )
-                Question.objects.bulk_create(questions_objs)
-                self.stdout.write(self.style.SUCCESS(f"Импортирован тест: {title}"))
+                    Question.objects.bulk_create(questions_objs)
+                    self.stdout.write(self.style.SUCCESS(f"Импортирован тест: {title}"))
